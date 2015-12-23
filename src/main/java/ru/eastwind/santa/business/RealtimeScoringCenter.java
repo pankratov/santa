@@ -2,6 +2,7 @@ package ru.eastwind.santa.business;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,6 @@ public class RealtimeScoringCenter implements ScoringCenter {
 	
 	private Map<String, Integer> scores = new HashMap<>();
 	
-	// документация
 	/**
 	 * Получает из письма с заголовком
 	 *     вида 'Report on John Black' имя
@@ -49,6 +49,11 @@ public class RealtimeScoringCenter implements ScoringCenter {
 		if(score < -1) {
 			santa.complain(childName);
 		}
+	}
+
+	@Override
+	public Optional<Integer> getScore(String childName) {
+		return Optional.ofNullable(scores.get(childName));
 	}
 
 }

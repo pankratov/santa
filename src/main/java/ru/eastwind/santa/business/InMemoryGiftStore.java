@@ -20,7 +20,7 @@ public class InMemoryGiftStore implements GiftStore {
 	private Map<String, Integer> giftNumber = new HashMap<>();
 
 	@Override
-	public synchronized Optional<Gift> getIfExists(String giftName) {
+	public synchronized Optional<Gift> takeIfExists(String giftName) {
 		Integer number = giftNumber.getOrDefault(giftName, 0);
 		if(number > 0) {
 			giftNumber.put(giftName, number-1);

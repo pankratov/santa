@@ -20,11 +20,11 @@ public class InMemoryGiftStoreTest {
 
 	@Test
 	public void testPutAndGet() throws Exception {
-		Optional<Gift> giftFromStore = giftStoreUT.getIfExists("testGift");
+		Optional<Gift> giftFromStore = giftStoreUT.takeIfExists("testGift");
 		assertFalse(giftFromStore.isPresent());
 		Gift testGift = new Gift("testGift");
 		giftStoreUT.put(testGift);
-		giftFromStore = giftStoreUT.getIfExists("testGift");
+		giftFromStore = giftStoreUT.takeIfExists("testGift");
 		assertTrue(giftFromStore.isPresent());
 		assertEquals(giftFromStore.get(), testGift);		
 	}

@@ -5,6 +5,6 @@ import java.util.Optional;
 import ru.eastwind.santa.domain.Gift;
 
 public interface GiftStore {
-	Optional<Gift> getIfExists(String giftName);
+	Optional<Gift> takeIfExists(String giftName);
 	void put(Gift gift);
 }
