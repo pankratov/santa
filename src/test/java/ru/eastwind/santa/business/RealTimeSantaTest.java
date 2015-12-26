@@ -50,6 +50,18 @@ public class RealTimeSantaTest {
 		reset(factory);
 
 		when(random.nextBoolean()).thenReturn(true);
+		when(scoringCenter.getScore(childName)).thenReturn(Optional.of(0));
+		santaUT.askforGift(mail);
+		verify(factory, only()).createGiftForChild(childName, giftName);
+		reset(factory);
+
+		when(random.nextBoolean()).thenReturn(false);
+		when(scoringCenter.getScore(childName)).thenReturn(Optional.of(0));
+		santaUT.askforGift(mail);
+		verify(factory, never()).createGiftForChild(childName, giftName);
+		reset(factory);
+
+		when(random.nextBoolean()).thenReturn(true);
 		when(scoringCenter.getScore(childName)).thenReturn(Optional.empty());
 		santaUT.askforGift(mail);
 		verify(factory, only()).createGiftForChild(childName, giftName);

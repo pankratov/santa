@@ -10,10 +10,11 @@ import org.springframework.stereotype.Component;
 import ru.eastwind.santa.domain.Behaviour;
 import ru.eastwind.santa.domain.Mail;
 
+// TODO: написать ЮНИТ-тест для класса
 @Component
 public class RealtimeScoringCenter implements ScoringCenter {
 
-	// TODO: внедрить спринговую зависимость и написать ЮНИТ-тест для класса
+	// TODO: внедрить спринговую зависимость
 	private ContentBasedBehaviourAnalyzer contentBasedBehaviourAnalyzer = new ContentBasedBehaviourAnalyzer();
 
 	@Autowired

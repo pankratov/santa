@@ -19,14 +19,19 @@ public class InMemoryGiftStoreTest {
 	}
 
 	@Test
-	public void testPutAndGet() throws Exception {
-		Optional<Gift> giftFromStore = giftStoreUT.takeIfExists("testGift");
+	public void testPutGetAndUnlabel() throws Exception {
+		Optional<Gift> giftFromStore = giftStoreUT.takeUnlabeled("testGift");
 		assertFalse(giftFromStore.isPresent());
 		Gift testGift = new Gift("testGift");
+		testGift.setLabel("John");
 		giftStoreUT.put(testGift);
-		giftFromStore = giftStoreUT.takeIfExists("testGift");
+		giftFromStore = giftStoreUT.takeUnlabeled("testGift");
+		assertFalse(giftFromStore.isPresent());
+		giftStoreUT.unlabelForChild("John");
+		giftFromStore = giftStoreUT.takeUnlabeled("testGift");
 		assertTrue(giftFromStore.isPresent());
-		assertEquals(giftFromStore.get(), testGift);		
+		assertEquals(giftFromStore.get().getName(), "testGift");
+		giftStoreUT.unlabelForChild("Stephen");
 	}
 
 }

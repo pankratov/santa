@@ -1,7 +1,7 @@
 package ru.eastwind.santa.business;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -16,27 +16,35 @@ import ru.eastwind.santa.domain.Gift;
 @Component
 public class InMemoryGiftStore implements GiftStore {
 
-	private Map<String, Gift> gifts = new HashMap<>();
-	private Map<String, Integer> giftNumber = new HashMap<>();
+	private HashMap<String, Gift> gifts = new HashMap<>();
+	private HashMap<String, Integer> unlabeledGiftNumber = new HashMap<>();
 
 	@Override
-	public synchronized Optional<Gift> takeIfExists(String giftName) {
-		Integer number = giftNumber.getOrDefault(giftName, 0);
+	public synchronized Optional<Gift> takeUnlabeled(String giftName) {
+		Integer number = unlabeledGiftNumber.getOrDefault(giftName, 0);
 		if(number > 0) {
-			giftNumber.put(giftName, number-1);
-			return Optional.of(gifts.get(giftName));
+			unlabeledGiftNumber.put(giftName, number-1);
+			return Optional.of(new Gift(giftName));
 		}
 		return Optional.empty();
 	}
 
 	@Override
 	public synchronized void put(Gift gift) {
-		Integer number = giftNumber.get(gift);
-		if(number != null) {
-			giftNumber.put(gift.getName(), number+1);
-		} else {
-			giftNumber.put(gift.getName(), 1);
-			gifts.put(gift.getName(), gift);
+		gifts.put(gift.getLabel(), gift);
+	}
+
+	@Override
+	public void unlabelForChild(String childName) {
+
+		if (gifts.containsKey(childName)) {
+			Gift gift = gifts.remove(childName);
+			Integer number = unlabeledGiftNumber.get(gift);
+			if (number != null) {
+				unlabeledGiftNumber.put(gift.getName(), number + 1);
+			} else {
+				unlabeledGiftNumber.put(gift.getName(), 1);
+			}
 		}
 	}
 
