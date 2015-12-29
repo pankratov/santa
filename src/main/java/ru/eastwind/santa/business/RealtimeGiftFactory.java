@@ -1,7 +1,6 @@
 package ru.eastwind.santa.business;
 
 import java.util.HashMap;
-import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -25,7 +24,7 @@ public class RealtimeGiftFactory implements GiftFactory {
 
 	private ExecutorService executor;
 
-	private HashMap<String, Future<?>> processes = new HashMap<>();
+	private HashMap<String, Future<?>> tasks = new HashMap<>();
 
 	@Autowired
 	private GiftStore giftStore;
@@ -56,7 +55,7 @@ public class RealtimeGiftFactory implements GiftFactory {
 	public void createGiftForChild(String childName, String giftName) {
 		// lambda
 		Future<?> future = executor.submit(() -> elfWork(childName, giftName));
-		processes.put(childName, future);
+		tasks.put(childName, future);
 	}
 
 	private void putAtStore(Gift gift) {
@@ -65,8 +64,8 @@ public class RealtimeGiftFactory implements GiftFactory {
 
 	@Override
 	public void cancelForChild(String childName) {
-		if (processes.containsKey(childName)) {
-			Future<?> future = processes.get(childName);
+		if (tasks.containsKey(childName)) {
+			Future<?> future = tasks.get(childName);
 			if (!future.isDone())
 				future.cancel(true);
 		}
