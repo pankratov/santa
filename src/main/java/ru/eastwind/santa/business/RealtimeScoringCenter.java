@@ -20,7 +20,7 @@ public class RealtimeScoringCenter implements ScoringCenter {
 	@Autowired
 	private Santa santa;
 	
-	private Map<String, Integer> scores = new HashMap<>();
+	private final Map<String, Integer> scores = new HashMap<>();
 	
 	/**
 	 * Получает из письма с заголовком
@@ -35,9 +35,9 @@ public class RealtimeScoringCenter implements ScoringCenter {
 	private synchronized Integer estimate(Behaviour behaviour, String childName) {
 		Integer score = scores.getOrDefault(childName, 0);
 		if(Behaviour.Good.equals(behaviour)) {
-			score = score + 1;
+			score++;
 		} else {
-			score = score - 1;
+			score--;
 		}
 		scores.put(childName, score);
 		return score;		
@@ -53,7 +53,7 @@ public class RealtimeScoringCenter implements ScoringCenter {
 	}
 
 	@Override
-	public Optional<Integer> getScore(String childName) {
+	public synchronized Optional<Integer> getScore(String childName) {
 		return Optional.ofNullable(scores.get(childName));
 	}
 

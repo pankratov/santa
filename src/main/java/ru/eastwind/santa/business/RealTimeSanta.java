@@ -14,15 +14,15 @@ public class RealTimeSanta implements Santa {
 	
 	private static final String SANTA_PHRASE = "Ho ho ho!";
 
+	private static final Integer THRESHOLD = 0;
+	
 	@Autowired
 	private GiftFactory factory;
 	
-	private static final Integer THRESHOLD = 0;
-
 	@Autowired
 	private ScoringCenter scoringCenter;
 
-	private Random random = new Random();
+	private final Random random = new Random();
 
 	@Override
 	public void askforGift(Mail mail) {

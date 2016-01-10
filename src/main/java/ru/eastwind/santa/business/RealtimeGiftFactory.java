@@ -1,10 +1,9 @@
 package ru.eastwind.santa.business;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +17,17 @@ public class RealtimeGiftFactory implements GiftFactory {
 	/**
 	 * количество эльфов
 	 */
-	private static int ELF_NUMBER = 5;
+	private static final int ELF_NUMBER = 5;
 
-	private static int ELF_LAZINESS = 2;
+	private final ExecutorService executor;
 
-	private ExecutorService executor;
-
-	private HashMap<String, Future<?>> tasks = new HashMap<>();
+	private final ConcurrentHashMap<String, Future<?>> tasks = new ConcurrentHashMap<>();
 
 	@Autowired
 	private GiftStore giftStore;
+	
+	@Autowired
+	private GiftBuilder giftBuilder;
 
 	public RealtimeGiftFactory() {
 		executor = Executors.newFixedThreadPool(ELF_NUMBER);
@@ -38,36 +38,32 @@ public class RealtimeGiftFactory implements GiftFactory {
 		Gift gift = createGift(giftName);
 		Logger.getGlobal().info("Stick label...");
 		gift.setLabel(childName);
+		// synchronized block ?
+		if(Thread.currentThread().isInterrupted()) {
+			gift.unlabel();
+		}
+		giftStore.put(gift);
+		//
 		Logger.getGlobal().info("Done!");
-		putAtStore(gift);
+		tasks.remove(childName);
 	}
 
 	private Gift createGift(String giftName) {
-		try {
-			TimeUnit.SECONDS.sleep(ELF_LAZINESS);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return new Gift(giftName);
+		return giftBuilder.build(giftName);
 	}
 
 	@Override
 	public void createGiftForChild(String childName, String giftName) {
 		// lambda
 		Future<?> future = executor.submit(() -> elfWork(childName, giftName));
-		tasks.put(childName, future);
-	}
-
-	private void putAtStore(Gift gift) {
-		giftStore.put(gift);
+		tasks.putIfAbsent(childName, future);
 	}
 
 	@Override
 	public void cancelForChild(String childName) {
-		if (tasks.containsKey(childName)) {
-			Future<?> future = tasks.get(childName);
-			if (!future.isDone())
-				future.cancel(true);
+		Future<?> future = tasks.get(childName);
+		if (future != null) {
+			future.cancel(true);
 		}
 		giftStore.unlabelForChild(childName);
 	}

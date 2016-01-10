@@ -33,5 +33,18 @@ public class InMemoryGiftStoreTest {
 		assertEquals(giftFromStore.get().getName(), "testGift");
 		giftStoreUT.unlabelForChild("Stephen");
 	}
+	
+	@Test
+	public void testPutGetUnlabeled() throws Exception {
+		Gift labeledGift = new Gift("labeledGift");
+		labeledGift.setLabel("some label");
+		Gift unlabeledGift = new Gift("unlabeledGift");
+		giftStoreUT.put(labeledGift);
+		giftStoreUT.put(unlabeledGift);
+		Optional<Gift> giftFromStore = giftStoreUT.takeUnlabeled("labeledGift");
+		assertFalse(giftFromStore.isPresent());
+		giftFromStore = giftStoreUT.takeUnlabeled("unlabeledGift");
+		assertTrue(giftFromStore.isPresent());		
+	}
 
 }
