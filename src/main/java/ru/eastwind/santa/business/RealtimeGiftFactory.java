@@ -21,7 +21,7 @@ public class RealtimeGiftFactory implements GiftFactory {
 
 	private final ExecutorService executor;
 
-	private final ConcurrentHashMap<String, Future<?>> tasks = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Future<?>> tasks;
 
 	@Autowired
 	private GiftStore giftStore;
@@ -31,6 +31,7 @@ public class RealtimeGiftFactory implements GiftFactory {
 
 	public RealtimeGiftFactory() {
 		executor = Executors.newFixedThreadPool(ELF_NUMBER);
+		tasks = new ConcurrentHashMap<>();
 	}
 
 	private void elfWork(String childName, String giftName) {
@@ -38,12 +39,12 @@ public class RealtimeGiftFactory implements GiftFactory {
 		Gift gift = createGift(giftName);
 		Logger.getGlobal().info("Stick label...");
 		gift.setLabel(childName);
-		// synchronized block ?
-		if(Thread.currentThread().isInterrupted()) {
-			gift.unlabel();
-		}
-		giftStore.put(gift);
-		//
+		synchronized(giftStore) {
+			if(Thread.currentThread().isInterrupted()) {
+				gift.unlabel();
+			}
+			giftStore.put(gift);
+		}		
 		Logger.getGlobal().info("Done!");
 		tasks.remove(childName);
 	}
@@ -56,7 +57,7 @@ public class RealtimeGiftFactory implements GiftFactory {
 	public void createGiftForChild(String childName, String giftName) {
 		// lambda
 		Future<?> future = executor.submit(() -> elfWork(childName, giftName));
-		tasks.putIfAbsent(childName, future);
+		tasks.put(childName, future);
 	}
 
 	@Override
@@ -64,6 +65,7 @@ public class RealtimeGiftFactory implements GiftFactory {
 		Future<?> future = tasks.get(childName);
 		if (future != null) {
 			future.cancel(true);
+			tasks.remove(childName);
 		}
 		giftStore.unlabelForChild(childName);
 	}
